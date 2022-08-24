@@ -1,4 +1,4 @@
-# Info
+# ![swt.png](picture or gif url)
 Download Link : <br>
 Requirements: Python 3.6+, Chrome.exe, Chromedriver.exe <br>
 <!-- # Start -->

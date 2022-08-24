@@ -1,5 +1,6 @@
-# ![image](https://github.com/SwtOpenSource/GetTempAndHumidity/blob/master/SwtLogo.png)
 <div align="center">
+# ![image](https://github.com/SwtOpenSource/GetTempAndHumidity/blob/master/SwtLogo.png)
+  <div>
 Download Link : <br>
 <!-- # None -->
 Requirements: Python 3.6+, Chrome.exe, Chromedriver.exe <br>

@@ -1,4 +1,4 @@
-# ![swt.png](picture or gif url)
+# ![image](https://github.com/SwtOpenSource/GetTempAndHumidity/blob/master/swt.png)
 Download Link : <br>
 Requirements: Python 3.6+, Chrome.exe, Chromedriver.exe <br>
 <!-- # Start -->

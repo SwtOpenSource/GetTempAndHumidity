@@ -128,7 +128,10 @@ class Robot:
                                                   "text-weight-normal__bIyDk3C7 "
                                                   "primaryHeading__bIyDk3C7 undefined']").text
 
-        filename = f"{os.getcwd()}/{str(datetime.now().date())}.csv"
+        observation_path = os.getcwd() + "/observation"
+        if not os.path.isdir(observation_path):
+            os.makedirs(observation_path)
+        filename = f"{os.getcwd()}/observation/{str(datetime.now().date())}.csv"
         if not os.path.isfile(filename):
             with open(filename, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)

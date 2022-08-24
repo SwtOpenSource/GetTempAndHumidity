@@ -140,7 +140,7 @@ class Robot:
         with open(filename, 'a+', newline='') as csvfile:
             writer = csv.writer(csvfile)
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            writer.writerow([now, humidity, temperature, location])
+            writer.writerow([now, location, humidity, temperature])
 
     def refresh_token(self, account: str, password: str):
         """ refresh token by login again """

@@ -9,5 +9,5 @@ Feature:<br>
 -將數據記錄並儲存為.csv<br>
 <!-- # Info -->
 From : 逆轉科技有限公司 <br>
-Email : git@asw.com.tw <br>
+Email : git@sw.com.tw <br>
 Tel : 02-2595-2808 <br>

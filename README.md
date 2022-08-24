@@ -1,7 +1,8 @@
 # ![image](https://github.com/SwtOpenSource/GetTempAndHumidity/blob/master/SwtLogo.png)
 Download Link : <br>
+<!-- # None -->
 Requirements: Python 3.6+, Chrome.exe, Chromedriver.exe <br>
-<!-- # Start -->
+<!-- # Feature -->
 Feature:<br>
 -透過GUI介面登入Unifi<br>
 -設定間隔時間、要取得的Unifi裝置<br>

@@ -1,4 +1,4 @@
-# ![image](https://github.com/SwtOpenSource/GetTempAndHumidity/blob/master/swt.png)
+# ![image](https://ppt.cc/fq4dex)
 Download Link : <br>
 Requirements: Python 3.6+, Chrome.exe, Chromedriver.exe <br>
 <!-- # Start -->

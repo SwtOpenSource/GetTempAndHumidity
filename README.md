@@ -5,6 +5,8 @@ Download Link : <br>
 https://twswt-my.sharepoint.com/:u:/g/personal/dave_fastwise_net/EUHk786MrzVFtUpAkr1ecrwBAJuIr7XJSYNrZk9XMRPOJg<br>
 <!-- # None -->
 Requirements: WindowsOS, Python 3.6+, Chrome.exe, Chromedriver.exe <br>
+⁎ Python -> https://www.python.org/<br>
+⁎ Chromedriver -> https://chromedriver.chromium.org/<br>
 <!-- # Feature -->
 Feature:<br>
 -透過GUI介面登入Unifi<br>

@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QFrame, QWidget
 from PyQt5.QtCore import Qt
 
 from thread import ThreadClass
+import os
 
 
 class UiForm(object):
@@ -16,15 +17,17 @@ class UiForm(object):
         self.password_lineEdit = None
         self.pushButton = None
         self.thread = None
-        self.child_window = None
+        self.child_window = ChildW()
+        self.notice_window = NoticeW(self)
+
 
     def setupUi(self, Form):
         """ setting all windows' ui """
         _translate = QtCore.QCoreApplication.translate
         Form.setObjectName("Form")
         Form.resize(450, 180)
+        Form.setFixedSize(Form.width(), Form.height())
         Form.setWindowTitle(_translate("Form", "UniFi 登入"))
-        Form.setWindowIcon(QtGui.QIcon('icon.png'))
 
         self.account_label = QtWidgets.QLabel(Form)
         self.account_label.setGeometry(QtCore.QRect(20, 5, 51, 61))
@@ -55,6 +58,8 @@ class UiForm(object):
         self.lineedit_init()
         self.check_input_func()
         self.buttonedit()
+        self.notice_window.show()
+
 
     def button_click(self):
         """ button event """
@@ -88,22 +93,78 @@ class UiForm(object):
 
     def check_input_func(self):
         """ checking account and password are typed """
-        if self.account_lineEdit.text() and self.password_lineEdit.text():
-            self.pushButton.setEnabled(True)
-        else:
+        if self.notice_window.status:
             self.pushButton.setEnabled(False)
+        else:
+            if self.account_lineEdit.text() and self.password_lineEdit.text():
+                self.pushButton.setEnabled(True)
+            else:
+                self.pushButton.setEnabled(False)
 
     def show_child_window(self):
         """ messagebox windows """
-        self.child_window = ChildW()
         self.child_window.show()
 
+
+class NoticeW(QWidget):
+    def __init__(self, mainframe):
+        super().__init__()
+        self.mainframe = mainframe
+        self.status = True
+        self.notice_label = QtWidgets.QLabel(self)
+        self.notice_label_2 = QtWidgets.QLabel(self)
+        self.runButton = QtWidgets.QPushButton(self)
+        self.unrunButton = QtWidgets.QPushButton(self)
+        self.noticeUi()
+
+    def noticeUi(self):
+        self.resize(355, 150)
+        self.setFixedSize(self.width(), self.height())
+        self.setWindowTitle("提醒")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+
+        self.notice_label.setGeometry(QtCore.QRect(5, 0, 350, 100))
+        self.notice_label.setObjectName("label")
+
+        self.notice_label_2.setGeometry(QtCore.QRect(5, 25, 350, 100))
+        self.notice_label_2.setObjectName("label")
+
+        self.runButton.setGeometry(QtCore.QRect(50, 100, 93, 28))
+        self.runButton.setObjectName("pushButton")
+
+        self.unrunButton.setGeometry(QtCore.QRect(210, 100, 93, 28))
+        self.unrunButton.setObjectName("pushButton")
+
+        self.edit_item()
+
+    def edit_item(self):
+        _translate = QtCore.QCoreApplication.translate
+        self.notice_label.setAlignment(Qt.AlignCenter)
+        self.notice_label.setText(_translate("Form", "使用前，會先將所有Chrome瀏覽器關閉"))
+        self.notice_label_2.setAlignment(Qt.AlignCenter)
+        self.notice_label_2.setText(_translate("Form", "請先確認完畢，再按下「執行」按鈕"))
+        self.runButton.setText(_translate("Form", "執行"))
+        self.runButton.clicked.connect(self.button_click)
+        self.unrunButton.setText(_translate("Form", "不執行"))
+        self.unrunButton.clicked.connect(self.closeEvent)
+
+    def button_click(self):
+        os.system('taskkill /im chromedriver.exe /F')  # kill all chromedriver.exe
+        os.system('taskkill /im chrome.exe /F')  # kill all chrome.exe
+        self.hide()
+        self.status = False
+
+    def closeEvent(self, event):
+        self.close()
+        self.mainframe.close()
 
 class ChildW(QWidget):
     def __init__(self):
         super().__init__()
         self.resize(-60, 100)
+        self.setFixedSize(self.width(), self.height())
         self.setWindowTitle("Loading")
+        self.setWindowIcon(QtGui.QIcon('iconswt.png'))
 
         self.load_label = QtWidgets.QLabel(self)
         self.load_label.setGeometry(QtCore.QRect(20, 5, 160, 100))

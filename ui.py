@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QFrame, QWidget
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
 
 from thread import ThreadClass
 import os
@@ -18,8 +19,6 @@ class UiForm(object):
         self.pushButton = None
         self.thread = None
         self.child_window = ChildW()
-        self.notice_window = NoticeW(self)
-
 
     def setupUi(self, Form):
         """ setting all windows' ui """
@@ -28,6 +27,12 @@ class UiForm(object):
         Form.resize(450, 180)
         Form.setFixedSize(Form.width(), Form.height())
         Form.setWindowTitle(_translate("Form", "UniFi 登入"))
+        Form.setWindowIcon(QtGui.QIcon('iconswt.png'))
+
+        logo = QtWidgets.QLabel(Form)
+        logo.setGeometry(QtCore.QRect(290, 110, 193, 58))
+        pixmap = QPixmap("swt.png")
+        logo.setPixmap(pixmap)
 
         self.account_label = QtWidgets.QLabel(Form)
         self.account_label.setGeometry(QtCore.QRect(20, 5, 51, 61))
@@ -40,7 +45,6 @@ class UiForm(object):
         self.status_info_label = QtWidgets.QLabel(Form)
         self.status_info_label.setGeometry(QtCore.QRect(100, 70, 293, 28))
         self.status_info_label.setObjectName("label")
-        # self.status_info_label.setAlignment(Qt.AlignCenter)
 
         self.account_lineEdit = QtWidgets.QLineEdit(Form)
         self.account_lineEdit.setGeometry(QtCore.QRect(80, 20, 351, 30))
@@ -58,7 +62,6 @@ class UiForm(object):
         self.lineedit_init()
         self.check_input_func()
         self.buttonedit()
-        self.notice_window.show()
 
 
     def button_click(self):
@@ -93,13 +96,10 @@ class UiForm(object):
 
     def check_input_func(self):
         """ checking account and password are typed """
-        if self.notice_window.status:
-            self.pushButton.setEnabled(False)
+        if self.account_lineEdit.text() and self.password_lineEdit.text():
+            self.pushButton.setEnabled(True)
         else:
-            if self.account_lineEdit.text() and self.password_lineEdit.text():
-                self.pushButton.setEnabled(True)
-            else:
-                self.pushButton.setEnabled(False)
+            self.pushButton.setEnabled(False)
 
     def show_child_window(self):
         """ messagebox windows """
@@ -108,6 +108,7 @@ class UiForm(object):
 
 class NoticeW(QWidget):
     def __init__(self, mainframe):
+        """ void variable """
         super().__init__()
         self.mainframe = mainframe
         self.status = True
@@ -118,6 +119,7 @@ class NoticeW(QWidget):
         self.noticeUi()
 
     def noticeUi(self):
+        """ setting notice windows' ui """
         self.resize(355, 150)
         self.setFixedSize(self.width(), self.height())
         self.setWindowTitle("提醒")
@@ -138,6 +140,7 @@ class NoticeW(QWidget):
         self.edit_item()
 
     def edit_item(self):
+        """ edit notice item """
         _translate = QtCore.QCoreApplication.translate
         self.notice_label.setAlignment(Qt.AlignCenter)
         self.notice_label.setText(_translate("Form", "使用前，會先將所有Chrome瀏覽器關閉"))
@@ -149,14 +152,17 @@ class NoticeW(QWidget):
         self.unrunButton.clicked.connect(self.closeEvent)
 
     def button_click(self):
+        """ button event """
         os.system('taskkill /im chromedriver.exe /F')  # kill all chromedriver.exe
         os.system('taskkill /im chrome.exe /F')  # kill all chrome.exe
+        self.mainframe.show()
         self.hide()
         self.status = False
 
     def closeEvent(self, event):
+        """ button event """
         self.close()
-        self.mainframe.close()
+
 
 class ChildW(QWidget):
     def __init__(self):

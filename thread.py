@@ -43,4 +43,3 @@ class ThreadClass(QtCore.QThread):
             if not status:
                 self.robot.refresh(account=self.account, password=self.password)
                 self.robot.create_page()
-

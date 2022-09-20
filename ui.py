@@ -186,4 +186,3 @@ class MainFrame(QFrame, UiForm):
         super(MainFrame, self).__init__(parent)  # 調用父類把子類對象轉為父類對象
         # 調用介面
         self.setupUi(self)
-

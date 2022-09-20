@@ -9,6 +9,7 @@ import csv
 import os
 
 
+
 def all_device_url() -> Union[list[str], bool]:
     """ get url device from .txt """
     if os.path.isfile("deviceURL.txt"):

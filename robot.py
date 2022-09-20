@@ -47,7 +47,13 @@ class Robot:
         chrome_options = Options()
         chrome_options.add_argument('--headless')  # 啟動Headless 無介面
         chrome_options.add_argument('--disable-gpu')  # 關閉GPU 避免某些系統或是網頁出錯
-        self.driver = webdriver.Chrome('./chromedriver', options=chrome_options)
+        try:
+            self.driver = webdriver.Chrome('./chromedriver', options=chrome_options)
+            return True
+        except Exception as e:
+            print(e)
+            print("Chromdriver error")
+            return False
 
     def get_unifi_url(self) -> bool:
         """ go to unifi and check internet"""
@@ -64,7 +70,7 @@ class Robot:
         self.driver.find_element(By.NAME, "username").send_keys(account)
         self.driver.find_element(By.NAME, "password").send_keys(password)
         self.driver.find_element(By.NAME, "password").submit()
-        self.driver.implicitly_wait(3)
+        time.sleep(5)
         try:
             self.driver.find_element(By.ID, "unifi-portal-styles")
             return True
@@ -78,9 +84,19 @@ class Robot:
         if status:
             self.mainframe_display_status(True)
             self.mainframe.child_window.load_label.setText(self._translate("Form", "登入成功"))
+            time.sleep(5)
+            self.mainframe.child_window.close()
         else:
-            self.mainframe.child_window.load_label.setText(self._translate("Form", "登入失敗"))
+            self.mainframe.child_window.load_label.setText(self._translate("Form", "帳號或密碼有誤"))
             self.mainframe.pushButton.setEnabled(True)
+
+    def create_page(self):
+        device_url_list = all_device_url()
+        for i in range(len(device_url_list)):
+            self.driver.execute_script(f'window.open()')
+            self.driver.switch_to.window(self.driver.window_handles[i + 1])
+            self.driver.get(device_url_list[i])
+            self.driver.implicitly_wait(3)
 
     def start(self) -> Union[str, bool]:
         """ start get temperature and humidity data """
@@ -89,44 +105,51 @@ class Robot:
             if not device_url_list:
                 self.mainframe.status_info_label.setText(self._translate("Form", "未輸入URL，請先輸入後再試"))
                 return "URL Error"
-            for device_url in device_url_list:
-                time.sleep(3)
-                self.driver.get(device_url)
-                time.sleep(3)
-                self.get_data_and_save()
+            for i in range(len(device_url_list)):
+                self.get_data_and_save(i + 1)
             time_interval()
             return True
         except Exception as e:
             print(e)
             return False
 
-    def mainframe_display_status(self, status):
+    def mainframe_display_status(self, status, which=None):
         """ after internet check display """
         self.mainframe.account_label.close()
         self.mainframe.password_label.close()
         self.mainframe.account_lineEdit.close()
         self.mainframe.password_lineEdit.close()
         self.mainframe.pushButton.close()
-
-        if not status:
-            self.mainframe.child_window.close()
-            self.mainframe.status_info_label.setText(self._translate("Form", "未連接上網路，關閉後再試一次"))
-
+        if which == "chromedriver":
+            if not status:
+                self.mainframe.child_window.close()
+                self.mainframe.status_info_label.setText(self._translate("Form", "請 安 裝 正 確 Chromedriver.exe"))
+        if which == "internet":
+            if not status:
+                self.mainframe.child_window.close()
+                self.mainframe.status_info_label.setText(self._translate("Form", "未連接上網路，關閉後再試一次"))
         self.mainframe.status_info_label.show()
 
-    def get_data_and_save(self):
+    def get_data_and_save(self, page):
         """ get data and save it as .csv """
-        humidity = self.driver.find_elements(By.CSS_SELECTOR,
-                                             value="span[class='SensorReadingsState__ChipText-sc-1ygwv1j-2 cFlQgU']")[
-            2].text
-        temperature = self.driver.find_elements(By.CSS_SELECTOR,
-                                                value="span[class='SensorReadingsState__ChipText-sc-1ygwv1j-2 cFlQgU']"
-                                                )[3].text
+        self.driver.switch_to.window(self.driver.window_handles[page])
+        data_list = self.driver.find_elements(By.CSS_SELECTOR,
+                                              value="span[class='SensorReadingsState__ChipText-sc-1ygwv1j-2 cFlQgU']")
+        humidity = None
+        temperature = None
+        for i in range(len(data_list)):
+            if "%" in data_list[i].text:
+                humidity = data_list[i].text
+            if "°C" in data_list[i].text:
+                temperature = data_list[i].text
         location = self.driver.find_element(By.CSS_SELECTOR,
                                             value="span[class='text-base__bIyDk3C7 text-size-caption__bIyDk3C7 "
                                                   "text-light-header__bIyDk3C7 truncate__bIyDk3C7 "
                                                   "text-weight-normal__bIyDk3C7 "
                                                   "primaryHeading__bIyDk3C7 undefined']").text
+        if not humidity or not temperature:
+            humidity = "裝置不存在，請檢查URL"
+            temperature = self.driver.current_url
 
         observation_path = os.getcwd() + "/observation"
         if not os.path.isdir(observation_path):
@@ -142,14 +165,19 @@ class Robot:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             writer.writerow([now, location, humidity, temperature])
 
-    def refresh_token(self, account: str, password: str):
+    def refresh(self, account: str, password: str):
         """ refresh token by login again """
         try:
+            device_url_list = all_device_url()
+            for i in range(len(device_url_list)):
+                self.driver.switch_to.window(self.driver.window_handles[0])
+                self.driver.close()
+            self.driver.switch_to.window(self.driver.window_handles[0])
             self.driver.delete_all_cookies()
             self.driver.get(self.unifi_url)
             self.driver.find_element(By.NAME, "username").send_keys(account)
             self.driver.find_element(By.NAME, "password").send_keys(password)
             self.driver.find_element(By.NAME, "password").submit()
-            time.sleep(10)
+            time.sleep(60)
         except Exception as e:
             print(e)

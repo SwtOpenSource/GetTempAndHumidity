@@ -173,7 +173,7 @@ class ChildW(QWidget):
         self.setWindowIcon(QtGui.QIcon('iconswt.png'))
 
         self.load_label = QtWidgets.QLabel(self)
-        self.load_label.setGeometry(QtCore.QRect(20, 5, 160, 100))
+        self.load_label.setGeometry(QtCore.QRect(10, 5, 160, 100))
         self.load_label.setObjectName("label")
 
         _translate = QtCore.QCoreApplication.translate

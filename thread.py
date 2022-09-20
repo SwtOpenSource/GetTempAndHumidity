@@ -12,22 +12,26 @@ class ThreadClass(QtCore.QThread):
 
     def run(self):
         """ web crawler """
-        self.robot.set()
-        internet_result = self.robot.get_unifi_url()
+        # check chromedriver version
+        chromedriver_result = self.robot.set()
+        if not chromedriver_result:
+            self.robot.mainframe_display_status(False, which="chromedriver")
+            return
 
         # check internet
+        internet_result = self.robot.get_unifi_url()
         if not internet_result:
-            self.robot.mainframe_display_status(False)
+            self.robot.mainframe_display_status(False, which="internet")
             return
-        result = self.robot.login_in(account=self.account, password=self.password)
 
         # check login result
-        if result:
+        login_result = self.robot.login_in(account=self.account, password=self.password)
+        if login_result:
             self.robot.login_result(True)
         else:
             self.robot.login_result(False)
             return
-
+        self.robot.create_page()
         self.get_data()
 
     def get_data(self):
@@ -37,4 +41,5 @@ class ThreadClass(QtCore.QThread):
             if status == "URL Error":
                 return
             if not status:
-                self.robot.refresh_token(account=self.account, password=self.password)
+                self.robot.refresh(account=self.account, password=self.password)
+                self.robot.create_page()

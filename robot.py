@@ -148,8 +148,9 @@ class Robot:
                                                   "text-weight-normal__bIyDk3C7 "
                                                   "primaryHeading__bIyDk3C7 undefined']").text
         if not humidity or not temperature:
-            humidity = "裝置不存在，請檢查URL"
-            temperature = self.driver.current_url
+            location = "裝置不存在"
+            humidity = "請檢查URL，最後10碼為"
+            temperature = self.driver.current_url[-10:]
 
         observation_path = os.getcwd() + "/observation"
         if not os.path.isdir(observation_path):

@@ -18,8 +18,8 @@ def all_device_url() -> Union[list[str], bool]:
 
     else:
         with open('deviceURL.txt', 'w') as device_id_file:
-            device_id = "請先在這裡輸入各裝置完整URL"
-            device_id_file.write(device_id)
+            device_url = ""  # default empty
+            device_id_file.write(device_url)
         return False
 
 
@@ -30,7 +30,7 @@ def time_interval():
             timeinterval = timeinterval_file.read()
     else:
         with open('time(min).txt', 'w') as timeinterval_file:
-            timeinterval = "5"
+            timeinterval = "5"  # default
             timeinterval_file.write(timeinterval)
     return time.sleep(float(timeinterval) * 60)
 
@@ -40,6 +40,7 @@ class Robot:
         self.mainframe = mainframe
         self._translate = QtCore.QCoreApplication.translate
         self.unifi_url = "https://unifi.ui.com"
+        self.device_url_list = all_device_url()
         self.driver = None
 
     def set(self):
@@ -70,7 +71,7 @@ class Robot:
         self.driver.find_element(By.NAME, "username").send_keys(account)
         self.driver.find_element(By.NAME, "password").send_keys(password)
         self.driver.find_element(By.NAME, "password").submit()
-        time.sleep(5)
+        time.sleep(5)  # 登入後暫停5秒，確定完成登入
         try:
             self.driver.find_element(By.ID, "unifi-portal-styles")
             return True
@@ -79,33 +80,35 @@ class Robot:
             print("登入失敗")
             return False
 
-    def login_result(self, status):
-        """ show login result """
+    def login_result(self, status: bool):
+        """ show login result on GUI"""
         if status:
             self.mainframe_display_status(True)
-            self.mainframe.child_window.load_label.setText(self._translate("Form", "登入成功"))
-            time.sleep(5)
+            self.mainframe.child_window.load_label.setText(
+                self._translate("Form", "登入成功"))
+            time.sleep(5)  # 5秒後自動關閉登入成功視窗
             self.mainframe.child_window.close()
         else:
-            self.mainframe.child_window.load_label.setText(self._translate("Form", "帳號或密碼有誤"))
+            self.mainframe.child_window.load_label.setText(
+                self._translate("Form", "帳號或密碼有誤"))
             self.mainframe.pushButton.setEnabled(True)
 
     def create_page(self):
-        device_url_list = all_device_url()
-        for i in range(len(device_url_list)):
+        """ create web page by each device"""
+        for i in range(len(self.device_url_list)):
             self.driver.execute_script(f'window.open()')
             self.driver.switch_to.window(self.driver.window_handles[i + 1])
-            self.driver.get(device_url_list[i])
+            self.driver.get(self.device_url_list[i])
             self.driver.implicitly_wait(3)
 
     def start(self) -> Union[str, bool]:
         """ start get temperature and humidity data """
         try:
-            device_url_list = all_device_url()
-            if not device_url_list:
-                self.mainframe.status_info_label.setText(self._translate("Form", "未輸入URL，請先輸入後再試"))
+            if not self.device_url_list:
+                self.mainframe.status_info_label.setText(
+                    self._translate("Form", "未輸入URL，請先輸入後再試"))
                 return "URL Error"
-            for i in range(len(device_url_list)):
+            for i in range(len(self.device_url_list)):
                 self.get_data_and_save(i + 1)
             time_interval()
             return True
@@ -113,8 +116,8 @@ class Robot:
             print(e)
             return False
 
-    def mainframe_display_status(self, status, which=None):
-        """ after internet check display """
+    def mainframe_display_status(self, status: int, which: str = None):
+        """ display status on GUI after check internet """
         self.mainframe.account_label.close()
         self.mainframe.password_label.close()
         self.mainframe.account_lineEdit.close()
@@ -123,15 +126,17 @@ class Robot:
         if which == "chromedriver":
             if not status:
                 self.mainframe.child_window.close()
-                self.mainframe.status_info_label.setText(self._translate("Form", "請 安 裝 正 確 Chromedriver.exe"))
+                self.mainframe.status_info_label.setText(
+                    self._translate("Form", "請 安 裝 正 確 Chromedriver.exe"))
         if which == "internet":
             if not status:
                 self.mainframe.child_window.close()
-                self.mainframe.status_info_label.setText(self._translate("Form", "未連接上網路，關閉後再試一次"))
+                self.mainframe.status_info_label.setText(
+                    self._translate("Form", "未連接上網路，關閉後再試一次"))
         self.mainframe.status_info_label.show()
 
-    def get_data_and_save(self, page):
-        """ get data and save it as .csv """
+    def get_data_and_save(self, page: int):
+        """ get data and save it as .csv in observation"""
         self.driver.switch_to.window(self.driver.window_handles[page])
         data_list = self.driver.find_elements(By.CSS_SELECTOR,
                                               value="span[class='SensorReadingsState__ChipText-sc-1ygwv1j-2 cFlQgU']")
@@ -167,10 +172,9 @@ class Robot:
             writer.writerow([now, location, humidity, temperature])
 
     def refresh(self, account: str, password: str):
-        """ refresh token by login again """
+        """ clean all cookies and refresh by login again """
         try:
-            device_url_list = all_device_url()
-            for i in range(len(device_url_list)):
+            for i in range(len(self.device_url_list)):
                 self.driver.switch_to.window(self.driver.window_handles[0])
                 self.driver.close()
             self.driver.switch_to.window(self.driver.window_handles[0])
@@ -179,6 +183,6 @@ class Robot:
             self.driver.find_element(By.NAME, "username").send_keys(account)
             self.driver.find_element(By.NAME, "password").send_keys(password)
             self.driver.find_element(By.NAME, "password").submit()
-            time.sleep(60)
+            time.sleep(60)  # 預設重整後暫停60秒，以免連續重整
         except Exception as e:
             print(e)
